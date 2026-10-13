@@ -21,8 +21,8 @@ Open the `backend` folder in VS Code (File, Open Folder).
 ### 3. Create your local config
 Create `backend/src/main/resources/application-local.properties`.
 Copy the contents from `application-local.properties.example` and fill in the real values.
-Ask Robyn privately for the database password and JWT secret.
-This file is gitignored. Never commit it or paste it in chat.
+DB password and secret available on request just reach out to the group.
+This file is gitignored. Never commit it.
 
 ### 4. Run
 Open `BackendApplication.java` and click Run above `main`.
@@ -91,5 +91,4 @@ git checkout -b feature/your-module
 git add .
 git commit -m "Describe what you did"
 git push -u origin feature/your-module
-```
- 
+``` 
