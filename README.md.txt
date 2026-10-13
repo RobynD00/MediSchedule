@@ -91,12 +91,4 @@ git checkout -b feature/your-module
 git add .
 git commit -m "Describe what you did"
 git push -u origin feature/your-module
-```
-- Open a Pull Request on GitHub. Robyn reviews and merges backend work
-- Before starting work each day:
-```
-git checkout main
-git pull
-git checkout feature/your-module
-git merge main
-```
+``` 
