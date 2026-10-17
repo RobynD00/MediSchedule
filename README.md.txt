@@ -3,7 +3,7 @@
 Medication reminder app for elderly users (60+).
 
 - `backend`: Java Spring Boot REST API
-- `frontend`: Flutter mobile app (to be added)
+- `frontend`: Flutter mobile app
 
 ## Backend setup
 
