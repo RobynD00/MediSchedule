@@ -1,26 +1,7 @@
 import 'package:flutter/material.dart';
 
-// Shared card container. Prefer this over directly styling Card on each screen.
-class AppCard extends StatelessWidget 
-{
-  const AppCard({required this.child, this.padding = const EdgeInsets.all(20), super.key});
-  final Widget child;
-  final EdgeInsetsGeometry padding;
-
-  @override
-  Widget build(BuildContext context) 
-  {
-    return Card(
-      child: Padding(
-        padding: padding,
-        child: child,
-      ),
-    );
-  }
-}
 // Shared action button. Supports primary/secondary styles and loading states.
-class AppButton extends StatelessWidget 
-{
+class ApplicationButtonWidget extends StatelessWidget {
   final String label;
   final VoidCallback? onPressed;
   final IconData? icon;
@@ -29,7 +10,7 @@ class AppButton extends StatelessWidget
   // Disables the button and displays a progress indicator during an operation.
   final bool isLoading;
 
-  const AppButton({
+  const ApplicationButtonWidget({
     required this.label,
     required this.onPressed,
     this.icon,
@@ -40,8 +21,7 @@ class AppButton extends StatelessWidget
   });
 
   @override
-  Widget build(BuildContext context) 
-  {
+  Widget build(BuildContext context) {
     final button = secondary
         ? OutlinedButton(
             onPressed: isLoading ? null : onPressed,
@@ -55,8 +35,7 @@ class AppButton extends StatelessWidget
     return expanded ? SizedBox(width: double.infinity, child: button) : button;
   }
 
-  Widget get _content 
-  {
+  Widget get _content {
     if (isLoading) {
       return const SizedBox(
         width: 24,
@@ -68,17 +47,13 @@ class AppButton extends StatelessWidget
     return Row(
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(icon, size: 20),
-        const SizedBox(width: 10),
-        Text(label),
-      ],
+      children: [Icon(icon, size: 20), const SizedBox(width: 10), Text(label)],
     );
   }
 }
+
 // Shared form input using the global theme and optional validation.
-class AppTextField extends StatelessWidget 
-{
+class ApplicationTextFieldWidget extends StatelessWidget {
   final String label;
   final TextEditingController? controller;
   final FormFieldValidator<String>? validator;
@@ -88,7 +63,7 @@ class AppTextField extends StatelessWidget
   final bool obscureText;
   final ValueChanged<String>? onChanged;
 
-  const AppTextField({
+  const ApplicationTextFieldWidget({
     required this.label,
     this.controller,
     this.validator,
@@ -101,8 +76,7 @@ class AppTextField extends StatelessWidget
   });
 
   @override
-  Widget build(BuildContext context) 
-  {
+  Widget build(BuildContext context) {
     return TextFormField(
       controller: controller,
       validator: validator,
@@ -118,16 +92,16 @@ class AppTextField extends StatelessWidget
     );
   }
 }
+
 // Consistent section title with an optional trailing action.
-class AppSectionHeading extends StatelessWidget 
-{
-  const AppSectionHeading(this.title, {this.action, super.key});
+class ApplicationSectionHeadingWidget extends StatelessWidget {
   final String title;
   final Widget? action;
 
+  const ApplicationSectionHeadingWidget(this.title, {this.action, super.key});
+
   @override
-  Widget build(BuildContext context) 
-  {
+  Widget build(BuildContext context) {
     return Row(
       children: [
         Expanded(
@@ -138,19 +112,38 @@ class AppSectionHeading extends StatelessWidget
     );
   }
 }
+
+// Shared card container. Prefer this over directly styling Card on each screen.
+class ApplicationCardWidget extends StatelessWidget {
+  final Widget child;
+  final EdgeInsetsGeometry padding;
+
+  const ApplicationCardWidget({
+    required this.child,
+    this.padding = const EdgeInsets.all(20),
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(padding: padding, child: child),
+    );
+  }
+}
+
 // Inline status banner;
-class AppFeedbackBanner extends StatelessWidget 
-{
-  const AppFeedbackBanner({
+class ApplicationFeedbackBannerWidget extends StatelessWidget {
+  final String message;
+  final IconData icon;
+  final bool isError;
+
+  const ApplicationFeedbackBannerWidget({
     required this.message,
     this.icon = Icons.info_outline,
     this.isError = false,
     super.key,
   });
-
-  final String message;
-  final IconData icon;
-  final bool isError;
 
   @override
   Widget build(BuildContext context) {
@@ -180,9 +173,9 @@ class AppFeedbackBanner extends StatelessWidget
               child: Text(
                 message,
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: foregroundColor,
-                      fontWeight: FontWeight.w600,
-                    ),
+                  color: foregroundColor,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ],
@@ -191,9 +184,75 @@ class AppFeedbackBanner extends StatelessWidget
     );
   }
 }
+
+// Reusable loading state for a screen or section.
+class ApplicationLoadingWidget extends StatelessWidget {
+  final String message;
+
+  const ApplicationLoadingWidget({this.message = 'Loading...', super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Semantics(
+        liveRegion: true,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const CircularProgressIndicator(),
+            const SizedBox(height: 16),
+            Text(message, style: Theme.of(context).textTheme.bodyLarge),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Reusable error state with an optional retry action.
+class ApplicationErrorWidget extends StatelessWidget {
+  final String message;
+  final VoidCallback? onRetry;
+
+  const ApplicationErrorWidget({
+    required this.message,
+    this.onRetry,
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.error_outline, size: 48, color: colors.error),
+            const SizedBox(height: 12),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyLarge,
+            ),
+            if (onRetry != null) ...[
+              const SizedBox(height: 16),
+              FilledButton.icon(
+                onPressed: onRetry,
+                icon: const Icon(Icons.refresh),
+                label: const Text('Retry'),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 // Displays a temporary SnackBar for lightweight UI feedback.
-void showAppFeedback
-(
+void showApplicationFeedback(
   BuildContext context,
   String message, {
   bool isError = false,

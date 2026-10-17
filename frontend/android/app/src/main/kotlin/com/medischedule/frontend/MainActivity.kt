@@ -1,4 +1,4 @@
-package com.example.medischedule
+package com.medischedule.frontend
 
 import io.flutter.embedding.android.FlutterActivity
 

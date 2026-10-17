@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'application/application.dart';
+import 'package:medischedule/application/application.dart';
 
-void main() 
-{
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const MediScheduleApp());
+  runApp(const MediScheduleApplication());
 }

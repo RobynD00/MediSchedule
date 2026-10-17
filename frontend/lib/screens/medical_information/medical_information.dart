@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
-import '../../core/widgets/application_widget.dart';
+import 'package:medischedule/core/application_widget.dart';
 
-class MedicalInfoScreen extends StatelessWidget 
-{
+class MedicalInfoScreen extends StatelessWidget {
   const MedicalInfoScreen({super.key});
 
   @override
-  Widget build(BuildContext context) 
-  {
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
@@ -15,65 +13,58 @@ class MedicalInfoScreen extends StatelessWidget
         Text('Health Info', style: theme.textTheme.headlineSmall),
 
         const SizedBox(height: 8),
-        Text(
-          'Important Details.',
-          style: theme.textTheme.bodyLarge,
-        ),
+        Text('Important Details.', style: theme.textTheme.bodyLarge),
 
         const SizedBox(height: 20),
-        const _HealthInfoCard(
+        const HealthInfoCard(
           icon: Icons.person_outline,
           title: 'Personal details',
           value: 'Profile information',
         ),
 
         const SizedBox(height: 12),
-        const _HealthInfoCard(
+        const HealthInfoCard(
           icon: Icons.medication_outlined,
           title: 'Allergies',
           value: 'Allergies information',
         ),
 
         const SizedBox(height: 12),
-        const _HealthInfoCard(
+        const HealthInfoCard(
           icon: Icons.local_hospital_outlined,
           title: 'Medical conditions',
           value: 'Medical conditions information',
         ),
 
         const SizedBox(height: 24),
-        AppButton(
+        ApplicationButtonWidget(
           label: 'QR code',
           icon: Icons.qr_code_2,
-          onPressed: () => showAppFeedback(
-            context,
-            'Emergency QR Pressed.',
-          ),
+          onPressed: () =>
+              showApplicationFeedback(context, 'Emergency QR Pressed.'),
         ),
       ],
     );
   }
 }
 
-class _HealthInfoCard extends StatelessWidget 
-{
+class HealthInfoCard extends StatelessWidget {
   final IconData icon;
   final String title;
   final String value;
 
-  const _HealthInfoCard({
+  const HealthInfoCard({
     required this.icon,
     required this.title,
     required this.value,
+    super.key,
   });
 
   @override
-  Widget build(BuildContext context) 
-  {
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return AppCard
-    (
+    return ApplicationCardWidget(
       padding: const EdgeInsets.all(17),
       child: Row(
         children: [

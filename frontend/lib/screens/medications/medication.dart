@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 
 // The Medication class encapsulates the properties and behaviors of a medication, including its name, dose, start date, frequency, time of administration, notes, and icon. It also tracks the last taken and skipped doses, allowing for the calculation of the next scheduled dose based on the medication's schedule and history. The class provides methods to copy instances with updated values and to determine the next eligible dose time based on various scheduling patterns.
-class Medication 
-{
+class Medication {
   final String name;
   final String dose;
   final DateTime startDate;
@@ -40,13 +39,11 @@ class Medication
   //
   // The copyWith method allows creating a new instance of the Medication class with updated values for lastTakenDoseAt and lastSkippedDoseAt while keeping the other properties unchanged. This is useful for maintaining immutability and updating the medication's dose history without modifying the original instance.
   // The method takes two optional parameters, lastTakenDoseAt and lastSkippedDoseAt, which represent the timestamps of the last taken and skipped doses, respectively. If these parameters are not provided, the method retains the existing values from the original instance.
-  Medication copyWith
-  ({
+  Medication copyWith({
     DateTime? lastTakenDoseAt,
     DateTime? lastSkippedDoseAt,
   }) {
-    return Medication
-    (
+    return Medication(
       name: name,
       dose: dose,
       startDate: startDate,
@@ -60,12 +57,12 @@ class Medication
       timeMinute: timeMinute,
     );
   }
+
   // Calculates the next scheduled dose based on the medication's schedule and history.
   //
   // Returns null if the medication is "As needed" or if the schedule is unsupported or invalid.
   // The calculation considers the start date, frequency, and the last handled dose (taken or skipped) to determine the next eligible dose time.
-  DateTime? nextDoseAt(DateTime now) 
-  {
+  DateTime? nextDoseAt(DateTime now) {
     // If the medication is "As needed", there is no scheduled dose, so return null.
     if (frequency == 'As needed') return null;
 
@@ -76,8 +73,7 @@ class Medication
 
     final (hour, minute) = timeParts;
     // The first scheduled dose is anchored to the start date and the specified time.
-    final firstDose = DateTime
-    (
+    final firstDose = DateTime(
       startDate.year,
       startDate.month,
       startDate.day,
@@ -87,21 +83,18 @@ class Medication
     // If the first dose is in the future, return it as the next scheduled dose.
     final intervalMatch = _intervalFrequencyPattern.firstMatch(frequency);
     // Hourly intervals are anchored to the first dose and limited to one day.
-    if (intervalMatch != null) 
-    {
+    if (intervalMatch != null) {
       final interval = int.tryParse(intervalMatch.group(1) ?? '') ?? 1;
       // If the interval is less than 1 hour, return null to indicate an invalid schedule.
       if (interval < 1) return null;
-      return _nextDailyIntervalDose
-      (
+      return nextDailyIntervalDose(
         firstDose: firstDose,
         now: now,
         intervalHours: interval,
       );
     }
     // Calendar-based schedules are anchored to the first dose and limited to one day.
-    final daysBetween = switch (frequency) 
-    {
+    final daysBetween = switch (frequency) {
       'Daily' => 1,
       'Every other day' => 2,
       'Weekly' => 7,
@@ -113,7 +106,9 @@ class Medication
     // start date or the most recently taken/skipped dose.
     if (lastHandledDoseAt == null && now.isBefore(firstDose)) return firstDose;
     // If the last handled dose is before the first dose, return the first dose.
-    if (lastHandledDoseAt != null && lastHandledDoseAt.isBefore(firstDose)) return firstDose;
+    if (lastHandledDoseAt != null && lastHandledDoseAt.isBefore(firstDose)) {
+      return firstDose;
+    }
 
     final referenceDate = lastHandledDoseAt ?? now;
     final elapsedDays =
@@ -123,8 +118,7 @@ class Medication
             )
             .inDays;
     var periods = elapsedDays ~/ daysBetween;
-    var candidate = DateTime
-    (
+    var candidate = DateTime(
       firstDose.year,
       firstDose.month,
       firstDose.day + periods * daysBetween,
@@ -132,14 +126,11 @@ class Medication
       firstDose.minute,
     );
     // If the candidate is not after the last handled dose, move to the next period.
-    if (lastHandledDoseAt != null) 
-    {
-      if (!candidate.isAfter(lastHandledDoseAt)) 
-      {
+    if (lastHandledDoseAt != null) {
+      if (!candidate.isAfter(lastHandledDoseAt)) {
         periods++;
       }
-      return DateTime
-      (
+      return DateTime(
         firstDose.year,
         firstDose.month,
         firstDose.day + periods * daysBetween,
@@ -151,23 +142,19 @@ class Medication
   }
 
   // Calculates the next scheduled dose for a daily interval schedule.
-  DateTime _nextDailyIntervalDose
-  ({
+  DateTime nextDailyIntervalDose({
     required DateTime firstDose,
     required DateTime now,
     required int intervalHours,
   }) {
-    
     final interval = Duration(hours: intervalHours);
 
     final lastHandledDoseAt = _lastHandledDoseAt;
     // If the last handled dose is before the first dose, return the first dose.
-    if (lastHandledDoseAt != null) 
-    {
+    if (lastHandledDoseAt != null) {
       if (lastHandledDoseAt.isBefore(firstDose)) return firstDose;
 
-      final takenDayStart = DateTime
-      (
+      final takenDayStart = DateTime(
         lastHandledDoseAt.year,
         lastHandledDoseAt.month,
         lastHandledDoseAt.day,
@@ -175,8 +162,7 @@ class Medication
         firstDose.minute,
       );
 
-      final nextDayStart = DateTime
-      (
+      final nextDayStart = DateTime(
         takenDayStart.year,
         takenDayStart.month,
         takenDayStart.day + 1,
@@ -200,16 +186,14 @@ class Medication
     // If the last handled dose is null, check if the first dose is in the future.
     if (now.isBefore(firstDose)) return firstDose;
 
-    final todayStart = DateTime
-    (
+    final todayStart = DateTime(
       now.year,
       now.month,
       now.day,
       firstDose.hour,
       firstDose.minute,
     );
-    final tomorrowStart = DateTime
-    (
+    final tomorrowStart = DateTime(
       todayStart.year,
       todayStart.month,
       todayStart.day + 1,
@@ -227,8 +211,7 @@ class Medication
   }
 
   // Returns the most recent dose-handling timestamp, or null if none exist.
-  DateTime? get _lastHandledDoseAt 
-  {
+  DateTime? get _lastHandledDoseAt {
     final taken = lastTakenDoseAt;
     final skipped = lastSkippedDoseAt;
     // If both taken and skipped doses are null, return null to indicate that no doses have been handled yet.
@@ -239,10 +222,8 @@ class Medication
   }
 
   // Returns the hour and minute of the scheduled dose time, or null if invalid.
-  (int, int)? get _timeParts 
-  {
-    if (timeHour != null && timeMinute != null) 
-    {
+  (int, int)? get _timeParts {
+    if (timeHour != null && timeMinute != null) {
       if (timeHour! < 0 ||
           timeHour! > 23 ||
           timeMinute! < 0 ||
@@ -252,8 +233,7 @@ class Medication
       return (timeHour!, timeMinute!);
     }
     // If timeHour and timeMinute are not provided, parse the time string to extract the hour and minute.
-    final match = RegExp
-    (
+    final match = RegExp(
       r'^(\d{1,2}):(\d{2})(?:\s*(AM|PM))?$',
       caseSensitive: false,
     ).firstMatch(time.trim());
@@ -266,8 +246,7 @@ class Medication
     // If the hour or minute is out of range, return null to indicate an invalid time.
     if (minute > 59) return null;
     // If the period is not provided, assume a 24-hour format and return the hour and minute.
-    if (period == null) 
-    {
+    if (period == null) {
       if (hour > 23) return null;
       return (hour, minute);
     }
