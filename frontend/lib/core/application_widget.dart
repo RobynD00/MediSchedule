@@ -107,7 +107,7 @@ class ApplicationSectionHeadingWidget extends StatelessWidget {
         Expanded(
           child: Text(title, style: Theme.of(context).textTheme.titleLarge),
         ),
-        ?action,
+        if (action case final actionWidget?) actionWidget,
       ],
     );
   }
