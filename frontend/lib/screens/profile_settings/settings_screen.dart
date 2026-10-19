@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:medischedule/core/application_theme.dart';
 import 'package:medischedule/core/application_widget.dart';
+import '../auth/logout_screen.dart';
 
 // Displays the profile and settings screen, allowing users to manage their preferences and access help information. The screen includes sections for personal details, preferences, and a help button. It uses a ListView to display the content, with various cards and buttons for user interaction.
 class SettingsScreen extends StatelessWidget {
@@ -84,8 +85,22 @@ class SettingsScreen extends StatelessWidget {
         ApplicationButtonWidget(
           label: 'Get Help',
           icon: Icons.help_outline,
+          secondary: true,
           onPressed: () => showApplicationFeedback(context, 'Help Options.'),
         ),
+
+        const SizedBox(height: 12),
+        ApplicationButtonWidget(
+          label: 'Log Out',
+          icon: Icons.logout,
+          onPressed: () {
+            Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => const LogoutScreen(),
+              ),
+            );
+          },
+        ),        
       ],
     );
   }
