@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../core/widgets/application_widget.dart';
+import '../../core/application_widget.dart';
 import 'verify_account_screen.dart';
 
 // Screen for registering a new user account as a Patient or Caregiver.
@@ -51,7 +51,7 @@ class _SignUpScreenState extends State<SignUpScreen>
 
     setState(() => _isLoading = false);
 
-    showAppFeedback(
+    showApplicationFeedback(
       context,
       'Registration successful! Please verify your account.',
     );
@@ -92,7 +92,7 @@ class _SignUpScreenState extends State<SignUpScreen>
               const SizedBox(height: 24),
 
               if (_errorMessage != null) ...[
-                AppFeedbackBanner(
+                ApplicationFeedbackBannerWidget(
                   message: _errorMessage!,
                   isError: true,
                   icon: Icons.error_outline,
@@ -100,11 +100,11 @@ class _SignUpScreenState extends State<SignUpScreen>
                 const SizedBox(height: 16),
               ],
 
-              AppCard(
+              ApplicationCardWidget(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    AppTextField(
+                    ApplicationTextFieldWidget(
                       label: 'Full Name',
                       hint: 'e.g. John Doe',
                       controller: _fullNameController,
@@ -119,7 +119,7 @@ class _SignUpScreenState extends State<SignUpScreen>
 
                     const SizedBox(height: 16),
 
-                    AppTextField(
+                    ApplicationTextFieldWidget(
                       label: 'Email address',
                       hint: 'e.g. user@example.com',
                       controller: _emailController,
@@ -230,7 +230,7 @@ class _SignUpScreenState extends State<SignUpScreen>
 
                     const SizedBox(height: 24),
 
-                    AppButton(
+                    ApplicationButtonWidget(
                       label: 'Create Account',
                       icon: Icons.person_add_outlined,
                       isLoading: _isLoading,
