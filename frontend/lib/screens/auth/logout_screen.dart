@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../core/widgets/application_widget.dart';
+import '../../core/application_widget.dart';
 
 // Screen or view for confirming user sign-out and revoking the current session.
 class LogoutScreen extends StatefulWidget 
@@ -30,7 +30,7 @@ class _LogoutScreenState extends State<LogoutScreen>
 
     setState(() => _isLoading = false);
 
-    showAppFeedback(context, 'You have been logged out.');
+    showApplicationFeedback(context, 'You have been logged out.');
 
     if (widget.onLogoutConfirmed != null) {
       widget.onLogoutConfirmed!();
@@ -62,7 +62,7 @@ class _LogoutScreenState extends State<LogoutScreen>
 
             const SizedBox(height: 24),
 
-            AppCard(
+            ApplicationCardWidget(
               child: Column(
                 children: [
                   const CircleAvatar(
@@ -82,7 +82,7 @@ class _LogoutScreenState extends State<LogoutScreen>
 
                   const SizedBox(height: 28),
 
-                  AppButton(
+                  ApplicationButtonWidget(
                     label: 'Log Out',
                     icon: Icons.logout,
                     isLoading: _isLoading,
@@ -91,7 +91,7 @@ class _LogoutScreenState extends State<LogoutScreen>
 
                   const SizedBox(height: 12),
 
-                  AppButton(
+                  ApplicationButtonWidget(
                     label: 'Cancel',
                     secondary: true,
                     onPressed: () => Navigator.of(context).pop(),

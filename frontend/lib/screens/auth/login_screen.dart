@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../core/widgets/application_widget.dart';
+import '../../core/application_widget.dart';
 import 'sign_up_screen.dart';
 import 'forgot_password_screen.dart';
 
@@ -51,7 +51,7 @@ class _LoginScreenState extends State<LoginScreen>
 
     setState(() => _isLoading = false);
 
-    showAppFeedback(context, 'Login successful! Welcome back.');
+    showApplicationFeedback(context, 'Login successful! Welcome back.');
 
     if (widget.onLoginSuccess != null) {
       widget.onLoginSuccess!();
@@ -86,7 +86,7 @@ class _LoginScreenState extends State<LoginScreen>
               const SizedBox(height: 24),
 
               if (_errorMessage != null) ...[
-                AppFeedbackBanner(
+                ApplicationFeedbackBannerWidget(
                   message: _errorMessage!,
                   isError: true,
                   icon: Icons.error_outline,
@@ -94,10 +94,10 @@ class _LoginScreenState extends State<LoginScreen>
                 const SizedBox(height: 16),
               ],
 
-              AppCard(
+              ApplicationCardWidget(
                 child: Column(
                   children: [
-                    AppTextField(
+                    ApplicationTextFieldWidget(
                       label: 'Email address',
                       hint: 'e.g. user@example.com',
                       controller: _emailController,
@@ -165,7 +165,7 @@ class _LoginScreenState extends State<LoginScreen>
 
                     const SizedBox(height: 16),
 
-                    AppButton(
+                    ApplicationButtonWidget(
                       label: 'Log In',
                       icon: Icons.login,
                       isLoading: _isLoading,

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../core/widgets/application_widget.dart';
+import '../../core/application_widget.dart';
 
 // Screen for requesting a password reset code and setting a new password.
 class ForgotPasswordScreen extends StatefulWidget 
@@ -53,7 +53,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
       _codeSent = true;
     });
 
-    showAppFeedback(
+    showApplicationFeedback(
       context,
       'A password reset code has been sent to your email.',
     );
@@ -75,7 +75,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
 
     setState(() => _isLoading = false);
 
-    showAppFeedback(
+    showApplicationFeedback(
       context,
       'Your password has been reset successfully. Please log in.',
     );
@@ -114,7 +114,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
               const SizedBox(height: 24),
 
               if (_errorMessage != null) ...[
-                AppFeedbackBanner(
+                ApplicationFeedbackBannerWidget(
                   message: _errorMessage!,
                   isError: true,
                   icon: Icons.error_outline,
@@ -122,10 +122,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                 const SizedBox(height: 16),
               ],
 
-              AppCard(
+              ApplicationCardWidget(
                 child: Column(
                   children: [
-                    AppTextField(
+                    ApplicationTextFieldWidget(
                       label: 'Email address',
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
@@ -144,7 +144,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                     if (_codeSent) ...[
                       const SizedBox(height: 16),
 
-                      AppTextField(
+                      ApplicationTextFieldWidget(
                         label: 'Reset Code',
                         hint: 'e.g. 123456',
                         controller: _codeController,
@@ -228,7 +228,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
 
                     const SizedBox(height: 24),
 
-                    AppButton(
+                    ApplicationButtonWidget(
                       label: _codeSent ? 'Reset Password' : 'Send Reset Code',
                       icon: _codeSent ? Icons.check_circle_outline : Icons.send,
                       isLoading: _isLoading,

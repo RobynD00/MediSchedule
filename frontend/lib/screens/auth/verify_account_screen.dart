@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../core/widgets/application_widget.dart';
+import '../../core/application_widget.dart';
 
 // Screen for verifying a newly registered user account via a verification code sent by email.
 class VerifyAccountScreen extends StatefulWidget 
@@ -56,7 +56,7 @@ class _VerifyAccountScreenState extends State<VerifyAccountScreen>
 
     setState(() => _isLoading = false);
 
-    showAppFeedback(
+    showApplicationFeedback(
       context,
       'Account verified successfully! You can now log in.',
     );
@@ -69,7 +69,7 @@ class _VerifyAccountScreenState extends State<VerifyAccountScreen>
   {
     final email = _emailController.text.trim();
     if (email.isEmpty || !email.contains('@')) {
-      showAppFeedback(
+      showApplicationFeedback(
         context,
         'Please enter a valid email address to resend code.',
         isError: true,
@@ -86,7 +86,7 @@ class _VerifyAccountScreenState extends State<VerifyAccountScreen>
 
     setState(() => _isResending = false);
 
-    showAppFeedback(
+    showApplicationFeedback(
       context,
       'A new verification code has been sent to $email.',
     );
@@ -118,7 +118,7 @@ class _VerifyAccountScreenState extends State<VerifyAccountScreen>
               const SizedBox(height: 24),
 
               if (_errorMessage != null) ...[
-                AppFeedbackBanner(
+                ApplicationFeedbackBannerWidget(
                   message: _errorMessage!,
                   isError: true,
                   icon: Icons.error_outline,
@@ -126,10 +126,10 @@ class _VerifyAccountScreenState extends State<VerifyAccountScreen>
                 const SizedBox(height: 16),
               ],
 
-              AppCard(
+              ApplicationCardWidget(
                 child: Column(
                   children: [
-                    AppTextField(
+                    ApplicationTextFieldWidget(
                       label: 'Email address',
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
@@ -144,7 +144,7 @@ class _VerifyAccountScreenState extends State<VerifyAccountScreen>
 
                     const SizedBox(height: 16),
 
-                    AppTextField(
+                    ApplicationTextFieldWidget(
                       label: 'Verification Code',
                       hint: 'e.g. 123456',
                       controller: _codeController,
@@ -163,7 +163,7 @@ class _VerifyAccountScreenState extends State<VerifyAccountScreen>
 
                     const SizedBox(height: 24),
 
-                    AppButton(
+                    ApplicationButtonWidget(
                       label: 'Verify Account',
                       icon: Icons.check_circle_outline,
                       isLoading: _isLoading,
@@ -172,7 +172,7 @@ class _VerifyAccountScreenState extends State<VerifyAccountScreen>
 
                     const SizedBox(height: 12),
 
-                    AppButton(
+                    ApplicationButtonWidget(
                       label: 'Resend Code',
                       secondary: true,
                       icon: Icons.refresh_outlined,
