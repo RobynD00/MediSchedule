@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/application_widget.dart';
 import 'sign_up_screen.dart';
 import 'forgot_password_screen.dart';
+import '../../services/auth_service.dart';
 
 // Screen for authenticating existing users via email/username and password.
 class LoginScreen extends StatefulWidget 
@@ -35,21 +36,47 @@ class _LoginScreenState extends State<LoginScreen>
     super.dispose();
   }
 
-  Future<void> _handleLogin() async 
-  {
-    if (!_formKey.currentState!.validate()) return;
-
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
-
-    // Simulated API call to POST /api/auth/login
-    await Future<void>.delayed(const Duration(seconds: 1));
-
+  
+Future<void> _handleLogin() async {
+  if (!_formKey.currentState!.validate()) return;
+ 
+  setState(() {
+    _isLoading = true;
+    _errorMessage = null;
+  });
+ 
+  try {
+    await AuthService().login(
+      email: _emailController.text.trim(),
+      password: _passwordController.text,
+    );
+ 
     if (!mounted) return;
-
-    setState(() => _isLoading = false);
+ 
+    showApplicationFeedback(
+      context,
+      'Login successful! Welcome back.',
+    );
+ 
+    if (widget.onLoginSuccess != null) {
+      widget.onLoginSuccess!();
+    } else {
+      Navigator.of(context).pop();
+    }
+  } catch (error) {
+    if (!mounted) return;
+ 
+    setState(() {
+      _errorMessage =
+          'Login failed. Please check your details and connection, then try again.';
+    });
+  } finally {
+    if (mounted) {
+      setState(() => _isLoading = false);
+    }
+  }
+}
+ 
 
     showApplicationFeedback(context, 'Login successful! Welcome back.');
 
