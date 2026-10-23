@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../core/application_widget.dart';
 import 'verify_account_screen.dart';
+import '../../services/api_client.dart';
+import '../../services/auth_service.dart';
 
-// Screen for registering a new user account as a Patient or Caregiver.
-class SignUpScreen extends StatefulWidget 
+class SignUpScreen extends StatefulWidget
 {
   const SignUpScreen({super.key});
 
@@ -11,7 +12,7 @@ class SignUpScreen extends StatefulWidget
   State<SignUpScreen> createState() => _SignUpScreenState();
 }
 
-class _SignUpScreenState extends State<SignUpScreen> 
+class _SignUpScreenState extends State<SignUpScreen>
 {
   final _formKey = GlobalKey<FormState>();
   final _fullNameController = TextEditingController();
@@ -19,14 +20,17 @@ class _SignUpScreenState extends State<SignUpScreen>
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
-  String _selectedRole = 'PATIENT'; // Default role: PATIENT
+  String _selectedRole = 'PATIENT';
+  DateTime? _dateOfBirth;
+  bool _acceptedTerms = false;
+  String? _formProblem;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
   bool _isLoading = false;
   String? _errorMessage;
 
   @override
-  void dispose() 
+  void dispose()
   {
     _fullNameController.dispose();
     _emailController.dispose();
@@ -35,17 +39,58 @@ class _SignUpScreenState extends State<SignUpScreen>
     super.dispose();
   }
 
-  Future<void> _handleRegister() async 
+  String _formatDate(DateTime date) {
+    final month = date.month.toString().padLeft(2, '0');
+    final day = date.day.toString().padLeft(2, '0');
+    return '${date.year}-$month-$day';
+  }
+
+  Future<void> _pickDateOfBirth() async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _dateOfBirth ?? DateTime(now.year - 40, now.month, now.day),
+      firstDate: DateTime(1900),
+      lastDate: now,
+    );
+    if (picked == null || !mounted) return;
+    setState(() => _dateOfBirth = picked);
+  }
+
+  Future<void> _handleRegister() async
   {
-    if (!_formKey.currentState!.validate()) return;
+    final formValid = _formKey.currentState!.validate();
+    String? problem;
+    if (_dateOfBirth == null) {
+      problem = 'Please enter your date of birth.';
+    } else if (!_acceptedTerms) {
+      problem = 'Please accept the privacy notice and terms.';
+    }
+    setState(() => _formProblem = problem);
+    if (!formValid || problem != null) return;
 
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
 
-    // Simulated API call to POST /api/auth/register
-    await Future<void>.delayed(const Duration(seconds: 1));
+    try {
+      await AuthService().register(
+        fullName: _fullNameController.text.trim(),
+        dateOfBirth: _formatDate(_dateOfBirth!),
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+        role: _selectedRole,
+        acceptedTerms: _acceptedTerms,
+      );
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+        _errorMessage = e.message;
+      });
+      return;
+    }
 
     if (!mounted) return;
 
@@ -56,7 +101,6 @@ class _SignUpScreenState extends State<SignUpScreen>
       'Registration successful! Please verify your account.',
     );
 
-    // Navigate to verify account screen with the entered email
     Navigator.of(context).pushReplacement(
       MaterialPageRoute<void>(
         builder: (_) => VerifyAccountScreen(
@@ -67,7 +111,7 @@ class _SignUpScreenState extends State<SignUpScreen>
   }
 
   @override
-  Widget build(BuildContext context) 
+  Widget build(BuildContext context)
   {
     final theme = Theme.of(context);
 
@@ -138,6 +182,24 @@ class _SignUpScreenState extends State<SignUpScreen>
 
                     const SizedBox(height: 16),
 
+                    InkWell(
+                      onTap: _pickDateOfBirth,
+                      child: InputDecorator(
+                        decoration: const InputDecoration(
+                          labelText: 'Date of birth',
+                          prefixIcon: Icon(Icons.cake_outlined),
+                        ),
+                        child: Text(
+                          _dateOfBirth == null
+                              ? 'Tap to choose'
+                              : _formatDate(_dateOfBirth!),
+                          style: theme.textTheme.bodyLarge,
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
                     Text('I am registering as:', style: theme.textTheme.titleMedium),
                     const SizedBox(height: 8),
 
@@ -188,8 +250,8 @@ class _SignUpScreenState extends State<SignUpScreen>
                         if (value == null || value.isEmpty) {
                           return 'Please enter a password.';
                         }
-                        if (value.length < 6) {
-                          return 'Password must be at least 6 characters.';
+                        if (value.length < 8) {
+                          return 'Password must be at least 8 characters.';
                         }
                         return null;
                       },
@@ -227,6 +289,29 @@ class _SignUpScreenState extends State<SignUpScreen>
                         return null;
                       },
                     ),
+
+                    const SizedBox(height: 16),
+
+                    CheckboxListTile(
+                      contentPadding: EdgeInsets.zero,
+                      controlAffinity: ListTileControlAffinity.leading,
+                      value: _acceptedTerms,
+                      onChanged: (value) =>
+                          setState(() => _acceptedTerms = value ?? false),
+                      title: Text(
+                        'I accept the privacy notice and terms.',
+                        style: theme.textTheme.bodyLarge,
+                      ),
+                    ),
+
+                    if (_formProblem != null) ...[
+                      const SizedBox(height: 8),
+                      ApplicationFeedbackBannerWidget(
+                        message: _formProblem!,
+                        isError: true,
+                        icon: Icons.error_outline,
+                      ),
+                    ],
 
                     const SizedBox(height: 24),
 

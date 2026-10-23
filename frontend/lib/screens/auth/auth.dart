@@ -1,3 +1,4 @@
+export 'auth_gate.dart';
 export 'login_screen.dart';
 export 'sign_up_screen.dart';
 export 'verify_account_screen.dart';

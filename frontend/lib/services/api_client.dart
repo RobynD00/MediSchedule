@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
-// Error shown to the user. The message is always simple, non-technical language.
 class ApiException implements Exception {
   final String message;
   final int? status;
@@ -12,18 +12,23 @@ class ApiException implements Exception {
   String toString() => message;
 }
 
-// Thin wrapper around the backend REST API.
-// After login, set ApiClient.token = <jwt from POST /api/auth/login> so every call is authenticated.
 class ApiClient {
-  // 10.0.2.2 reaches the laptop from the Android emulator. For a real phone use the laptop IP:
-  // flutter run --dart-define=API_BASE_URL=http://192.168.x.x:8080
   static const String baseUrl = String.fromEnvironment(
     'API_BASE_URL',
     defaultValue: 'http://10.0.2.2:8080',
   );
 
-  // JWT of the logged-in user. Null means nobody is logged in.
   static String? token;
+
+  static final ValueNotifier<bool> loggedIn = ValueNotifier<bool>(false);
+
+  static void setToken(String? value) {
+    token = value;
+    loggedIn.value = value != null;
+  }
+
+  static Future<dynamic> postPublic(String path, {Object? body}) =>
+      _send('POST', path, body: body, requireToken: false);
 
   static Future<dynamic> get(String path, {Map<String, String>? query}) =>
       _send('GET', path, query: query);
@@ -41,14 +46,15 @@ class ApiClient {
     String path, {
     Map<String, String>? query,
     Object? body,
+    bool requireToken = true,
   }) async {
-    if (token == null) {
+    if (requireToken && token == null) {
       throw const ApiException('Please log in to continue.', status: 401);
     }
     final uri = Uri.parse('$baseUrl$path').replace(queryParameters: query);
     final request = http.Request(method, uri)
-      ..headers['Content-Type'] = 'application/json'
-      ..headers['Authorization'] = 'Bearer $token';
+      ..headers['Content-Type'] = 'application/json';
+    if (token != null) request.headers['Authorization'] = 'Bearer $token';
     if (body != null) request.body = jsonEncode(body);
 
     try {
@@ -59,10 +65,10 @@ class ApiClient {
 
       if (response.statusCode >= 200 && response.statusCode < 300) return json;
 
-      // Backend errors look like {"status":404,"message":"Medication not found."}
       final message = json is Map && json['message'] is String
           ? json['message'] as String
           : 'Something went wrong. Please try again.';
+      if (response.statusCode == 401 && requireToken) setToken(null);
       throw ApiException(message, status: response.statusCode);
     } on ApiException {
       rethrow;

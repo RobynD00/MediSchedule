@@ -1,63 +1,87 @@
-import 'dart:async';
+import 'package:medischedule/services/api_client.dart';
 
-// Service layer handling authentication requests and backend interaction.
 class AuthService {
-  // Verifies the OTP code sent to the specified email address.
-  Future<bool> verifyOtp({
-    required String email,
-    required String code,
-  }) async {
-    // Simulated network delay for POST /api/auth/verify
-    await Future<void>.delayed(const Duration(seconds: 1));
-    return true;
-  }
+  static String fullName = '';
+  static String role = '';
+  static int? userId;
 
-  // Resends an OTP verification code to the specified email address.
-  Future<bool> resendOtp({required String email}) async {
-    // Simulated network delay
-    await Future<void>.delayed(const Duration(seconds: 1));
-    return true;
-  }
+  static bool get isCaregiver => role == 'CAREGIVER';
 
-  // Authenticates a user with email and password.
-  Future<bool> login({
-    required String email,
-    required String password,
-  }) async {
-    await Future<void>.delayed(const Duration(seconds: 1));
-    return true;
-  }
-
-  // Registers a new user account.
   Future<bool> register({
-    required String name,
+    required String fullName,
+    required String dateOfBirth,
     required String email,
     required String password,
     required String role,
+    required bool acceptedTerms,
   }) async {
-    await Future<void>.delayed(const Duration(seconds: 1));
+    await ApiClient.postPublic('/api/auth/register', body: {
+      'fullName': fullName,
+      'dateOfBirth': dateOfBirth,
+      'email': email,
+      'password': password,
+      'role': role,
+      'acceptedTerms': acceptedTerms,
+    });
     return true;
   }
 
-  // Requests a password reset code.
+  Future<bool> verifyOtp({required String email, required String code}) async {
+    await ApiClient.postPublic('/api/auth/verify', body: {
+      'identifier': email,
+      'code': code,
+    });
+    return true;
+  }
+
+  Future<bool> resendOtp({required String email}) async {
+    await ApiClient.postPublic('/api/auth/resend-code', body: {
+      'identifier': email,
+    });
+    return true;
+  }
+
+  Future<bool> login({required String email, required String password}) async {
+    final json = await ApiClient.postPublic('/api/auth/login', body: {
+      'identifier': email,
+      'password': password,
+    });
+    final data = json as Map<String, dynamic>;
+    fullName = (data['fullName'] ?? '') as String;
+    role = (data['role'] ?? '') as String;
+    userId = (data['userId'] as num?)?.toInt();
+    ApiClient.setToken(data['token'] as String);
+    return true;
+  }
+
   Future<bool> requestPasswordReset({required String email}) async {
-    await Future<void>.delayed(const Duration(seconds: 1));
+    await ApiClient.postPublic('/api/auth/forgot-password', body: {
+      'identifier': email,
+    });
     return true;
   }
 
-  // Resets user password using a code.
   Future<bool> resetPassword({
     required String email,
     required String code,
     required String newPassword,
   }) async {
-    await Future<void>.delayed(const Duration(seconds: 1));
+    await ApiClient.postPublic('/api/auth/reset-password', body: {
+      'identifier': email,
+      'code': code,
+      'newPassword': newPassword,
+    });
     return true;
   }
 
-  // Logs out the user and revokes the active session.
   Future<bool> logout() async {
-    await Future<void>.delayed(const Duration(seconds: 1));
+    try {
+      await ApiClient.post('/api/auth/logout');
+    } on ApiException catch (_) {}
+    fullName = '';
+    role = '';
+    userId = null;
+    ApiClient.setToken(null);
     return true;
   }
 }

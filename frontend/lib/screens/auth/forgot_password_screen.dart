@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../core/application_widget.dart';
+import '../../services/api_client.dart';
+import '../../services/auth_service.dart';
 
-// Screen for requesting a password reset code and setting a new password.
-class ForgotPasswordScreen extends StatefulWidget 
+class ForgotPasswordScreen extends StatefulWidget
 {
   const ForgotPasswordScreen({super.key});
 
@@ -10,7 +11,7 @@ class ForgotPasswordScreen extends StatefulWidget
   State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
 }
 
-class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> 
+class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
 {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
@@ -25,7 +26,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
   String? _errorMessage;
 
   @override
-  void dispose() 
+  void dispose()
   {
     _emailController.dispose();
     _codeController.dispose();
@@ -34,7 +35,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
     super.dispose();
   }
 
-  Future<void> _handleRequestResetCode() async 
+  Future<void> _handleRequestResetCode() async
   {
     if (!_formKey.currentState!.validate()) return;
 
@@ -43,8 +44,18 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
       _errorMessage = null;
     });
 
-    // Simulated API call to POST /api/auth/forgot-password
-    await Future<void>.delayed(const Duration(seconds: 1));
+    try {
+      await AuthService().requestPasswordReset(
+        email: _emailController.text.trim(),
+      );
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+        _errorMessage = e.message;
+      });
+      return;
+    }
 
     if (!mounted) return;
 
@@ -59,7 +70,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
     );
   }
 
-  Future<void> _handleResetPassword() async 
+  Future<void> _handleResetPassword() async
   {
     if (!_formKey.currentState!.validate()) return;
 
@@ -68,8 +79,20 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
       _errorMessage = null;
     });
 
-    // Simulated API call to reset password with code
-    await Future<void>.delayed(const Duration(seconds: 1));
+    try {
+      await AuthService().resetPassword(
+        email: _emailController.text.trim(),
+        code: _codeController.text.trim(),
+        newPassword: _newPasswordController.text,
+      );
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+        _errorMessage = e.message;
+      });
+      return;
+    }
 
     if (!mounted) return;
 
@@ -84,7 +107,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
   }
 
   @override
-  Widget build(BuildContext context) 
+  Widget build(BuildContext context)
   {
     final theme = Theme.of(context);
 
@@ -184,8 +207,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                           if (value == null || value.isEmpty) {
                             return 'Please enter a new password.';
                           }
-                          if (value.length < 6) {
-                            return 'Password must be at least 6 characters.';
+                          if (value.length < 8) {
+                            return 'Password must be at least 8 characters.';
                           }
                           return null;
                         },
