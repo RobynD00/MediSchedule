@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:medischedule/application/application_routes.dart';
-import 'package:medischedule/application/application_shell.dart';
+import 'package:medischedule/screens/auth/auth_gate.dart';
 import 'package:medischedule/core/application_theme.dart';
 import 'package:medischedule/screens/medications/medication.dart';
 import 'package:medischedule/screens/notification/notification_screen.dart';
 
-// Root application: applies the shared theme and launches the navigation shell.
 class MediScheduleApplication extends StatelessWidget {
   const MediScheduleApplication({super.key});
 
@@ -25,7 +24,7 @@ class MediScheduleApplication extends StatelessWidget {
             case ApplicationRoutes.home:
               return MaterialPageRoute<void>(
                 settings: settings,
-                builder: (_) => const ApplicationShell(),
+                builder: (_) => const AuthGate(),
               );
             case ApplicationRoutes.notifications:
               final arguments = settings.arguments;

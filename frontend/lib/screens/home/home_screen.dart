@@ -1,20 +1,16 @@
-import 'package:flutter/material.dart'; // Flutter framework for building UI.
-import 'package:medischedule/core/application_widget.dart'; // Importing shared application widgets for consistent UI components.
-import 'package:medischedule/screens/medications/medication.dart'; // Importing the Medication model to access medication data.
+import 'package:flutter/material.dart';
+import 'package:medischedule/core/application_widget.dart';
+import 'package:medischedule/screens/medications/medication.dart';
 
-import 'dart:async'; // For the periodic timer to refresh the relative dose times.
+import 'dart:async';
 
 class HomeScreen extends StatefulWidget {
-  // Current medication schedule and dose history.
   final List<Medication> medications;
 
-  // Opens the medication section.
   final VoidCallback onViewMedications;
 
-  // Reports the medication and scheduled time confirmed by the user.
-  final void Function(Medication, DateTime) onMedicationTaken;
+  final Future<String> Function(Medication, DateTime) onMedicationTaken;
 
-  // Optional clock for deterministic schedule display in tests.
   final DateTime Function()? clock;
 
   const HomeScreen({
@@ -25,36 +21,33 @@ class HomeScreen extends StatefulWidget {
     super.key,
   });
 
-  @override // Creates the mutable state for this widget.
+  @override
   State<HomeScreen> createState() => HomeScreenState();
 }
 
-// The mutable state for the HomeScreen widget, responsible for managing the UI and interactions.
 class HomeScreenState extends State<HomeScreen> {
-  DateTime get timeNow => widget.clock?.call() ?? DateTime.now(); // Retrieves the current time, using the provided clock function if available, otherwise defaults to the system time.
+  DateTime get timeNow => widget.clock?.call() ?? DateTime.now();
   Timer? clockTimer;
   static const earlyDoseWindow = Duration(minutes: 5);
 
-  @override // Initializes the state and sets up a periodic timer to refresh the UI every 15 seconds.
+  @override
   void initState() {
     super.initState();
-    // Refresh the displayed relative dose times as the clock advances.
     clockTimer = Timer.periodic(const Duration(seconds: 15), (_) {
       if (mounted) setState(() {});
     });
   }
 
-  @override // Cancels the periodic timer when the widget is disposed to prevent memory leaks.
+  @override
   void dispose() {
     clockTimer?.cancel();
     super.dispose();
   }
 
-  @override // Builds the UI for the HomeScreen, displaying upcoming medication reminders and allowing users to mark doses as taken.
+  @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final now = timeNow;
-    // Ask the shared Medication model for each next dose and sort by time.
     final upcomingMedications = <ScheduledMedication>[
       for (final medication in widget.medications)
         if (medication.nextDoseAt(now) case final nextDose?)
@@ -64,7 +57,6 @@ class HomeScreenState extends State<HomeScreen> {
     final nextMedication = upcomingMedications.isEmpty
         ? null
         : upcomingMedications.first;
-    // The main scrollable area of the HomeScreen, containing all the UI elements.
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
       children: [
@@ -138,19 +130,16 @@ class HomeScreenState extends State<HomeScreen> {
                 ApplicationButtonWidget(
                   label: 'I have taken it',
                   icon: Icons.check_circle_outline,
-                  // Prevent marking a dose taken more than five minutes early.
                   onPressed:
                       nextMedication.nextDose.isAfter(now.add(earlyDoseWindow))
                       ? null
-                      : () {
-                          widget.onMedicationTaken(
+                      : () async {
+                          final message = await widget.onMedicationTaken(
                             nextMedication.medication,
                             nextMedication.nextDose,
                           );
-                          showApplicationFeedback(
-                            context,
-                            'Thanks. Your reminder is noted.',
-                          );
+                          if (!mounted) return;
+                          showApplicationFeedback(context, message);
                         },
                 ),
 
@@ -204,7 +193,6 @@ class HomeScreenState extends State<HomeScreen> {
   }
 }
 
-// Represents a scheduled medication dose, including the medication details and the next scheduled dose time.
 class ScheduledMedication {
   final Medication medication;
   final DateTime nextDose;
@@ -212,7 +200,6 @@ class ScheduledMedication {
   const ScheduledMedication(this.medication, this.nextDose);
 }
 
-// Displays an upcoming medication reminder with its title, detail, time, and icon.
 class UpcomingReminder extends StatelessWidget {
   final String title;
   final String detail;
@@ -227,7 +214,7 @@ class UpcomingReminder extends StatelessWidget {
     super.key,
   });
 
-  @override // Builds the UI for an upcoming medication reminder, showing the medication name, dose, scheduled time, and an icon representing the medication.
+  @override
   Widget build(BuildContext context) {
     return ApplicationCardWidget(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),

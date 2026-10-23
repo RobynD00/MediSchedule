@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../core/application_widget.dart';
+import '../../services/auth_service.dart';
 
-// Screen or view for confirming user sign-out and revoking the current session.
-class LogoutScreen extends StatefulWidget 
+class LogoutScreen extends StatefulWidget
 {
   final VoidCallback? onLogoutConfirmed;
 
@@ -15,16 +15,15 @@ class LogoutScreen extends StatefulWidget
   State<LogoutScreen> createState() => _LogoutScreenState();
 }
 
-class _LogoutScreenState extends State<LogoutScreen> 
+class _LogoutScreenState extends State<LogoutScreen>
 {
   bool _isLoading = false;
 
-  Future<void> _handleLogout() async 
+  Future<void> _handleLogout() async
   {
     setState(() => _isLoading = true);
 
-    // Simulated API call to POST /api/auth/logout
-    await Future<void>.delayed(const Duration(seconds: 1));
+    await AuthService().logout();
 
     if (!mounted) return;
 
@@ -40,7 +39,7 @@ class _LogoutScreenState extends State<LogoutScreen>
   }
 
   @override
-  Widget build(BuildContext context) 
+  Widget build(BuildContext context)
   {
     final theme = Theme.of(context);
 

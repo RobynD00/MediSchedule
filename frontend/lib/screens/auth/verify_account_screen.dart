@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../core/application_widget.dart';
+import '../../services/api_client.dart';
+import '../../services/auth_service.dart';
 
-// Screen for verifying a newly registered user account via a verification code sent by email.
-class VerifyAccountScreen extends StatefulWidget 
+class VerifyAccountScreen extends StatefulWidget
 {
   final String? email;
 
@@ -15,7 +16,7 @@ class VerifyAccountScreen extends StatefulWidget
   State<VerifyAccountScreen> createState() => _VerifyAccountScreenState();
 }
 
-class _VerifyAccountScreenState extends State<VerifyAccountScreen> 
+class _VerifyAccountScreenState extends State<VerifyAccountScreen>
 {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _emailController;
@@ -26,21 +27,21 @@ class _VerifyAccountScreenState extends State<VerifyAccountScreen>
   String? _errorMessage;
 
   @override
-  void initState() 
+  void initState()
   {
     super.initState();
     _emailController = TextEditingController(text: widget.email ?? '');
   }
 
   @override
-  void dispose() 
+  void dispose()
   {
     _emailController.dispose();
     _codeController.dispose();
     super.dispose();
   }
 
-  Future<void> _handleVerify() async 
+  Future<void> _handleVerify() async
   {
     if (!_formKey.currentState!.validate()) return;
 
@@ -49,8 +50,19 @@ class _VerifyAccountScreenState extends State<VerifyAccountScreen>
       _errorMessage = null;
     });
 
-    // Simulated API call to POST /api/auth/verify
-    await Future<void>.delayed(const Duration(seconds: 1));
+    try {
+      await AuthService().verifyOtp(
+        email: _emailController.text.trim(),
+        code: _codeController.text.trim(),
+      );
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+        _errorMessage = e.message;
+      });
+      return;
+    }
 
     if (!mounted) return;
 
@@ -61,11 +73,10 @@ class _VerifyAccountScreenState extends State<VerifyAccountScreen>
       'Account verified successfully! You can now log in.',
     );
 
-    // Navigate back to root / login screen
     Navigator.of(context).popUntil((route) => route.isFirst);
   }
 
-  Future<void> _handleResendCode() async 
+  Future<void> _handleResendCode() async
   {
     final email = _emailController.text.trim();
     if (email.isEmpty || !email.contains('@')) {
@@ -79,8 +90,14 @@ class _VerifyAccountScreenState extends State<VerifyAccountScreen>
 
     setState(() => _isResending = true);
 
-    // Simulated API call to resend verification code
-    await Future<void>.delayed(const Duration(seconds: 1));
+    try {
+      await AuthService().resendOtp(email: email);
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      setState(() => _isResending = false);
+      showApplicationFeedback(context, e.message, isError: true);
+      return;
+    }
 
     if (!mounted) return;
 
@@ -93,7 +110,7 @@ class _VerifyAccountScreenState extends State<VerifyAccountScreen>
   }
 
   @override
-  Widget build(BuildContext context) 
+  Widget build(BuildContext context)
   {
     final theme = Theme.of(context);
 
