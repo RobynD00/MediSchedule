@@ -32,6 +32,8 @@ public class DoseService {
     public static final int MISSED_AFTER_MINUTES = 30;
     /** Doses older than this are not created if the server was off when they were due. */
     private static final int CREATE_WINDOW_MINUTES = 60;
+    private static final long JOB_LOCK_CREATE = 5001L;
+    private static final long JOB_LOCK_MISSED = 5002L;
 
     private final DoseQueryRepository doses;
     private final ReminderQueryRepository reminders;
@@ -101,6 +103,7 @@ public class DoseService {
     /** Creates today's PENDING doses for every active reminder whose time has arrived. */
     @Transactional
     public int createDueDoses(LocalDateTime now) {
+        if (!doses.tryJobLock(JOB_LOCK_CREATE)) return 0; // another backend is already doing this
         int created = 0;
         LocalDate today = now.toLocalDate();
         for (Reminder r : reminders.findByActiveTrue()) {
@@ -127,6 +130,7 @@ public class DoseService {
     /** Marks ignored doses missed and alerts caregivers (UC08). */
     @Transactional
     public int markOverdueAsMissed(LocalDateTime now) {
+        if (!doses.tryJobLock(JOB_LOCK_MISSED)) return 0; // another backend is already doing this
         int count = 0;
         for (DoseHistory d : doses.findByStatusAndScheduledAtBefore(
                 DoseStatus.PENDING, now.minusMinutes(MISSED_AFTER_MINUTES))) {

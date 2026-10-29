@@ -5,7 +5,9 @@ import com.medischedule.backend.security.CurrentUser;
 import com.medischedule.backend.service.DoseService;
 import java.time.LocalDateTime;
 import java.util.List;
-import org.springframework.format.annotation.DateTimeFormat;
+import com.medischedule.backend.exception.ApiException;
+import java.time.format.DateTimeParseException;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 /** Dose endpoints. {id} is a dose id (a DoseHistory row). */
@@ -44,8 +46,19 @@ public class DoseController {
     @GetMapping("/history")
     public List<DoseResponse> history(
             @RequestParam(required = false) Long medicationId,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime from,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime to) {
-        return service.history(CurrentUser.id(), medicationId, from, to);
+            @RequestParam(required = false) String from,
+            @RequestParam(required = false) String to) {
+        return service.history(CurrentUser.id(), medicationId, parse(from), parse(to));
+    }
+
+    /** Blank means "no limit". A bad value gives a clean 400 instead of a generic 500. */
+    private static LocalDateTime parse(String value) {
+        if (value == null || value.isBlank()) return null;
+        try {
+            return LocalDateTime.parse(value.trim());
+        } catch (DateTimeParseException e) {
+            throw new ApiException(HttpStatus.BAD_REQUEST,
+                    "Please use a date like 2026-10-01T00:00:00.");
+        }
     }
 }
