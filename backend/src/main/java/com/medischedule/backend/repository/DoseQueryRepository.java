@@ -16,6 +16,13 @@ public interface DoseQueryRepository extends JpaRepository<DoseHistory, Long> {
     /** Finds a dose only if its medication belongs to this user. */
     Optional<DoseHistory> findByIdAndMedicationUserId(Long id, Long userId);
 
+    /**
+     * Cluster-wide lock held until the current transaction ends. Several backends share one
+     * database, so only one of them may run the dose jobs at a time (stops duplicate doses).
+     */
+    @Query(value = "select pg_try_advisory_xact_lock(:key)", nativeQuery = true)
+    boolean tryJobLock(@Param("key") long key);
+
     /** Stops the scheduler creating the same dose twice. */
     boolean existsByReminderIdAndScheduledAt(Long reminderId, LocalDateTime scheduledAt);
 
